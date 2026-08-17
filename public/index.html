@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Onirica — Diario dei sogni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --night: #0B0B1A;
+    --surface: #15152B;
+    --surface-2: #1D1D3A;
+    --indigo: #6C5CE7;
+    --gold: #E0C089;
+    --text: #F3F1FF;
+    --text-dim: #B2AEDB;
+    --danger: #E38B8B;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--night);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100%;
+  }
+
+  #stars {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .shell {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .brand .moon { font-size: 20px; }
+
+  .brand h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: 0.02em;
+    margin: 0;
+    color: var(--gold);
+  }
+
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 4px;
+  }
+
+  nav.tabs button {
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  nav.tabs button.active {
+    background: var(--indigo);
+    color: white;
+  }
+
+  h2.headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 1.25;
+    margin: 0 0 8px;
+  }
+
+  p.sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 28px;
+    max-width: 46ch;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 160px;
+    resize: vertical;
+    background: var(--surface);
+    border: 1px solid rgba(224, 192, 137, 0.15);
+    border-radius: 14px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 18px;
+  }
+
+  textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  textarea::placeholder { color: rgba(178, 174, 219, 0.5); }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    gap: 12px;
+  }
+
+  .hint { font-size: 12px; color: var(--text-dim); }
+
+  button.primary {
+    background: var(--indigo);
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 12px 26px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s, opacity 0.15s;
+  }
+
+  button.primary:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  button.primary:not(:disabled):hover { transform: translateY(-1px); }
+
+  .card {
+    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border: 1px solid rgba(224, 192, 137, 0.18);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 28px;
+    animation: rise 0.4s ease;
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--gold);
+    margin: 0 0 10px;
+  }
+
+  .symbols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .symbols span {
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--indigo);
+    background: rgba(108, 92, 231, 0.15);
+    border-radius: 999px;
+    padding: 5px 11px;
+  }
+
+  .interpretation {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .source-tag {
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .source-tag.ai { color: var(--gold); }
+
+  /* --- History --- */
+  .dream-item {
+    background: var(--surface);
+    border: 1px solid rgba(224, 192, 137, 0.12);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+
+  .dream-item .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .dream-item .date {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .dream-item h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .dream-item .preview {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dream-item .expand {
+    margin-top: 16px;
+    border-top: 1px solid rgba(224, 192, 137, 0.12);
+    padding-top: 16px;
+  }
+
+  .dream-item .expand h5 {
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 6px;
+  }
+
+  .dream-item .expand p {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    white-space: pre-wrap;
+    margin: 0 0 14px;
+  }
+
+  .delete-btn {
+    background: transparent;
+    border: 1px solid rgba(227, 139, 139, 0.4);
+    color: var(--danger);
+    font-size: 12px;
+    border-radius: 999px;
+    padding: 6px 14px;
+    cursor: pointer;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+  }
+
+  .empty .moon { font-size: 28px; margin-bottom: 12px; color: var(--gold); }
+
+  footer.meta {
+    margin-top: 48px;
+    text-align: center;
+    font-size: 11px;
+    color: rgba(178, 174, 219, 0.5);
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<div class="shell">
+  <header class="top">
+    <div class="brand"><span class="moon">🌙</span><h1>Onirica</h1></div>
+    <nav class="tabs">
+      <button id="tabHome" class="active">Nuovo sogno</button>
+      <button id="tabHistory">Diario</button>
+    </nav>
+  </header>
+
+  <section id="viewHome">
+    <h2 class="headline">Racconta il tuo sogno</h2>
+    <p class="sub" id="modeNote">Caricamento…</p>
+
+    <textarea id="dreamInput" placeholder="Ero in una casa che non riconoscevo, e..."></textarea>
+
+    <div class="actions">
+      <span class="hint" id="lengthHint"></span>
+      <button class="primary" id="interpretBtn" disabled>Interpreta il sogno</button>
+    </div>
+
+    <div id="resultCard"></div>
+  </section>
+
+  <section id="viewHistory" class="hidden">
+    <h2 class="headline">Diario onirico</h2>
+    <p class="sub">Tutti i sogni interpretati, salvati sul tuo server.</p>
+    <div id="historyList"></div>
+  </section>
+
+  <footer class="meta">Onirica · self-hosted · i tuoi dati restano sul tuo server</footer>
+</div>
+
+<script>
+const MIN_LENGTH = 12;
+const dreamInput = document.getElementById('dreamInput');
+const interpretBtn = document.getElementById('interpretBtn');
+const lengthHint = document.getElementById('lengthHint');
+const resultCard = document.getElementById('resultCard');
+const modeNote = document.getElementById('modeNote');
+const historyList = document.getElementById('historyList');
+
+const tabHome = document.getElementById('tabHome');
+const tabHistory = document.getElementById('tabHistory');
+const viewHome = document.getElementById('viewHome');
+const viewHistory = document.getElementById('viewHistory');
+
+let aiEnabled = false;
+
+function showTab(tab) {
+  const home = tab === 'home';
+  viewHome.classList.toggle('hidden', !home);
+  viewHistory.classList.toggle('hidden', home);
+  tabHome.classList.toggle('active', home);
+  tabHistory.classList.toggle('active', !home);
+  if (!home) loadHistory();
+}
+tabHome.addEventListener('click', () => showTab('home'));
+tabHistory.addEventListener('click', () => showTab('history'));
+
+dreamInput.addEventListener('input', () => {
+  const len = dreamInput.value.trim().length;
+  interpretBtn.disabled = len < MIN_LENGTH;
+  lengthHint.textContent = len > 0 && len < MIN_LENGTH
+    ? `Racconta qualche dettaglio in più (almeno ${MIN_LENGTH} caratteri).`
+    : '';
+  resultCard.innerHTML = '';
+});
+
+async function loadHealth() {
+  try {
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    aiEnabled = data.aiEnabled;
+    modeNote.textContent = aiEnabled
+      ? "L'interpretazione è generata da un modello linguistico configurato su questo server."
+      : "L'interpretazione viene generata interamente su questo server, in locale, senza AI.";
+  } catch (e) {
+    modeNote.textContent = "L'interpretazione viene generata su questo server.";
+  }
+}
+
+interpretBtn.addEventListener('click', async () => {
+  const dream = dreamInput.value.trim();
+  if (dream.length < MIN_LENGTH) return;
+
+  interpretBtn.disabled = true;
+  interpretBtn.textContent = 'Interpretazione in corso…';
+  resultCard.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/interpret', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dream })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Errore durante l\'interpretazione');
+    }
+    const data = await res.json();
+    renderResult(data);
+  } catch (e) {
+    resultCard.innerHTML = `<div class="card"><p class="interpretation">${escapeHtml(e.message)}</p></div>`;
+  } finally {
+    interpretBtn.disabled = dreamInput.value.trim().length < MIN_LENGTH;
+    interpretBtn.textContent = 'Interpreta il sogno';
+  }
+});
+
+function renderResult(data) {
+  const symbolsHtml = (data.symbols || []).map(s => `<span>${escapeHtml(s)}</span>`).join('');
+  resultCard.innerHTML = `
+    <div class="card">
+      <h3>${escapeHtml(data.title)}</h3>
+      ${symbolsHtml ? `<div class="symbols">${symbolsHtml}</div>` : ''}
+      <div class="interpretation">${escapeHtml(data.interpretation)}</div>
+      <div class="source-tag ${data.source === 'ai' ? 'ai' : ''}">
+        ${data.source === 'ai' ? '✦ Interpretazione generata via AI' : '◐ Interpretazione generata in locale'}
+      </div>
+    </div>`;
+}
+
+async function loadHistory() {
+  historyList.innerHTML = '<p class="sub">Caricamento…</p>';
+  try {
+    const res = await fetch('/api/dreams');
+    const dreams = await res.json();
+    if (dreams.length === 0) {
+      historyList.innerHTML = `<div class="empty"><div class="moon">🌙</div>Il diario è ancora vuoto.<br/>Interpreta il tuo primo sogno per iniziare l'archivio.</div>`;
+      return;
+    }
+    historyList.innerHTML = '';
+    dreams.forEach(d => historyList.appendChild(renderDreamItem(d)));
+  } catch (e) {
+    historyList.innerHTML = '<p class="sub">Impossibile caricare il diario.</p>';
+  }
+}
+
+function renderDreamItem(dream) {
+  const el = document.createElement('div');
+  el.className = 'dream-item';
+  const date = new Date(dream.createdAt).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  el.innerHTML = `
+    <div class="row">
+      <div>
+        <div class="date">${date}</div>
+        <h4>${escapeHtml(dream.title)}</h4>
+        <div class="preview">${escapeHtml(dream.content)}</div>
+      </div>
+    </div>
+    <div class="expand hidden">
+      <h5>Il sogno</h5>
+      <p>${escapeHtml(dream.content)}</p>
+      <h5>Interpretazione</h5>
+      <p>${escapeHtml(dream.interpretation)}</p>
+      <button class="delete-btn">Elimina</button>
+    </div>
+  `;
+
+  el.querySelector('.row').addEventListener('click', () => {
+    el.querySelector('.expand').classList.toggle('hidden');
+  });
+
+  el.querySelector('.delete-btn').addEventListener('click', async (evt) => {
+    evt.stopPropagation();
+    await fetch(`/api/dreams/${dream.id}`, { method: 'DELETE' });
+    loadHistory();
+  });
+
+  return el;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// --- Sfondo stellato, sottile e leggero ---
+(function initStars() {
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const count = Math.floor((canvas.width * canvas.height) / 9000);
+    stars = Array.from({ length: count }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.2 + 0.2,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.002 + Math.random() * 0.004
+    }));
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const s of stars) {
+      const alpha = 0.35 + 0.4 * Math.sin(t * s.speed + s.phase);
+      ctx.fillStyle = `rgba(224, 192, 137, ${Math.max(0, alpha) * 0.6})`;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(draw);
+})();
+
+loadHealth();
+</script>
+</body>
+</html>

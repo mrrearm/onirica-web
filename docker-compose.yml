@@ -1,0 +1,16 @@
+services:
+  onirica-web:
+    build: .
+    image: onirica-web:latest
+    container_name: onirica-web
+    restart: unless-stopped
+    ports:
+      - "3020:3020"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=3020
+      # Facoltativo: se impostata, l'interpretazione usa Groq (gratuito)
+      # invece del motore locale. Va messa in un file .env locale,
+      # MAI committata nel repository.
+      - GROQ_API_KEY=${GROQ_API_KEY:-}

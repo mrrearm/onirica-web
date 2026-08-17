@@ -1,0 +1,14 @@
+{
+  "name": "onirica-web",
+  "version": "1.0.0",
+  "description": "Onirica - Diario dei sogni, versione web self-hosted",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.4",
+    "express": "^4.19.2"
+  }
+}

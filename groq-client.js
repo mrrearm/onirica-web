@@ -1,7 +1,7 @@
 'use strict';
 
 const GROQ_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
-const MODEL = 'llama-3.3-70b-versatile';
+const MODEL = 'openai/gpt-oss-120b';
 
 const SYSTEM_PROMPT =
   'Sei un assistente esperto di interpretazione dei sogni, con un tono caldo, ' +
@@ -48,7 +48,11 @@ async function interpretWithGroq(dreamText) {
       })
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const bodyText = await response.text().catch(() => '');
+      console.error(`[Groq] Richiesta fallita: HTTP ${response.status} - ${bodyText.slice(0, 300)}`);
+      return null;
+    }
 
     const data = await response.json();
     const content = data?.choices?.[0]?.message?.content;
@@ -64,6 +68,7 @@ async function interpretWithGroq(dreamText) {
       mood: parsed.mood || 'ambivalente'
     };
   } catch (e) {
+    console.error('[Groq] Errore durante la chiamata:', e.message);
     return null;
   }
 }

@@ -305,18 +305,162 @@
   }
 
   .hidden { display: none !important; }
+
+  /* --- Autenticazione --- */
+  .auth-shell {
+    max-width: 380px;
+    margin: 80px auto;
+    padding: 0 24px;
+  }
+
+  .auth-card {
+    background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+    border: 1px solid rgba(224, 192, 137, 0.18);
+    border-radius: 18px;
+    padding: 32px 26px;
+  }
+
+  .auth-card .moon-big {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .auth-card h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 26px;
+    text-align: center;
+    color: var(--gold);
+    margin: 0 0 4px;
+  }
+
+  .auth-card .tagline {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin: 0 0 26px;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--night);
+    border: 1px solid rgba(224, 192, 137, 0.18);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 11px 14px;
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .auth-error {
+    background: rgba(227, 139, 139, 0.12);
+    border: 1px solid rgba(227, 139, 139, 0.3);
+    color: var(--danger);
+    font-size: 12.5px;
+    border-radius: 8px;
+    padding: 9px 12px;
+    margin-bottom: 14px;
+  }
+
+  button.primary.full {
+    width: 100%;
+    padding: 13px;
+    margin-top: 4px;
+  }
+
+  .auth-switch {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 20px;
+  }
+
+  .auth-switch a {
+    color: var(--gold);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .account-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .account-chip button {
+    background: transparent;
+    border: 1px solid rgba(224, 192, 137, 0.25);
+    color: var(--text-dim);
+    font-size: 11px;
+    border-radius: 999px;
+    padding: 5px 12px;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
 <canvas id="stars"></canvas>
 
-<div class="shell">
+<div class="shell hidden" id="authShell">
+  <div class="auth-shell">
+    <div class="auth-card">
+      <div class="moon-big">🌙</div>
+      <h1 id="authTitle">Accedi a Onirica</h1>
+      <p class="tagline">Il tuo diario dei sogni, privato e solo tuo.</p>
+
+      <div id="authError" class="auth-error hidden"></div>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="authEmail" autocomplete="email" placeholder="tu@esempio.it" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="authPassword" autocomplete="current-password" placeholder="Almeno 8 caratteri" />
+      </div>
+
+      <button class="primary full" id="authSubmit">Accedi</button>
+
+      <p class="auth-switch">
+        <span id="authSwitchText">Non hai un account?</span>
+        <a id="authSwitchLink">Registrati</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="shell" id="appShell">
   <header class="top">
     <div class="brand"><span class="moon">🌙</span><h1>Onirica</h1></div>
-    <nav class="tabs">
-      <button id="tabHome" class="active">Nuovo sogno</button>
-      <button id="tabHistory">Diario</button>
-    </nav>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <nav class="tabs">
+        <button id="tabHome" class="active">Nuovo sogno</button>
+        <button id="tabHistory">Diario</button>
+      </nav>
+      <div class="account-chip">
+        <span id="accountEmail"></span>
+        <button id="logoutBtn">Esci</button>
+      </div>
+    </div>
   </header>
 
   <section id="viewHome">
@@ -356,7 +500,112 @@ const tabHistory = document.getElementById('tabHistory');
 const viewHome = document.getElementById('viewHome');
 const viewHistory = document.getElementById('viewHistory');
 
+const authShell = document.getElementById('authShell');
+const appShell = document.getElementById('appShell');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const authError = document.getElementById('authError');
+const authSubmit = document.getElementById('authSubmit');
+const authTitle = document.getElementById('authTitle');
+const authSwitchText = document.getElementById('authSwitchText');
+const authSwitchLink = document.getElementById('authSwitchLink');
+const accountEmail = document.getElementById('accountEmail');
+const logoutBtn = document.getElementById('logoutBtn');
+
 let aiEnabled = false;
+let authMode = 'login'; // 'login' | 'register'
+
+function showApp(email) {
+  authShell.classList.add('hidden');
+  appShell.classList.remove('hidden');
+  accountEmail.textContent = email;
+}
+
+function showAuth() {
+  appShell.classList.add('hidden');
+  authShell.classList.remove('hidden');
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  authError.classList.add('hidden');
+  if (mode === 'login') {
+    authTitle.textContent = 'Accedi a Onirica';
+    authSubmit.textContent = 'Accedi';
+    authSwitchText.textContent = 'Non hai un account?';
+    authSwitchLink.textContent = 'Registrati';
+    authPassword.setAttribute('autocomplete', 'current-password');
+  } else {
+    authTitle.textContent = 'Crea il tuo diario';
+    authSubmit.textContent = 'Registrati';
+    authSwitchText.textContent = 'Hai già un account?';
+    authSwitchLink.textContent = 'Accedi';
+    authPassword.setAttribute('autocomplete', 'new-password');
+  }
+}
+
+authSwitchLink.addEventListener('click', () => setAuthMode(authMode === 'login' ? 'register' : 'login'));
+authPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') authSubmit.click(); });
+
+authSubmit.addEventListener('click', async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+  authError.classList.add('hidden');
+
+  if (!email || !password) {
+    authError.textContent = 'Inserisci email e password.';
+    authError.classList.remove('hidden');
+    return;
+  }
+
+  authSubmit.disabled = true;
+  const originalLabel = authSubmit.textContent;
+  authSubmit.textContent = authMode === 'login' ? 'Accesso in corso…' : 'Creazione account…';
+
+  try {
+    const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Qualcosa è andato storto.');
+
+    authPassword.value = '';
+    showApp(data.email);
+    loadHealth();
+    showTab('home');
+  } catch (e) {
+    authError.textContent = e.message;
+    authError.classList.remove('hidden');
+  } finally {
+    authSubmit.disabled = false;
+    authSubmit.textContent = originalLabel;
+  }
+});
+
+logoutBtn.addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  showAuth();
+  setAuthMode('login');
+});
+
+async function checkSession() {
+  try {
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    const data = await res.json();
+    if (data.user) {
+      showApp(data.user.email);
+      loadHealth();
+    } else {
+      showAuth();
+    }
+  } catch (e) {
+    showAuth();
+  }
+}
 
 function showTab(tab) {
   const home = tab === 'home';
@@ -403,8 +652,10 @@ interpretBtn.addEventListener('click', async () => {
     const res = await fetch('/api/interpret', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ dream })
     });
+    if (res.status === 401) { showAuth(); return; }
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Errore durante l\'interpretazione');
@@ -435,7 +686,8 @@ function renderResult(data) {
 async function loadHistory() {
   historyList.innerHTML = '<p class="sub">Caricamento…</p>';
   try {
-    const res = await fetch('/api/dreams');
+    const res = await fetch('/api/dreams', { credentials: 'include' });
+    if (res.status === 401) { showAuth(); return; }
     const dreams = await res.json();
     if (dreams.length === 0) {
       historyList.innerHTML = `<div class="empty"><div class="moon">🌙</div>Il diario è ancora vuoto.<br/>Interpreta il tuo primo sogno per iniziare l'archivio.</div>`;
@@ -476,7 +728,7 @@ function renderDreamItem(dream) {
 
   el.querySelector('.delete-btn').addEventListener('click', async (evt) => {
     evt.stopPropagation();
-    await fetch(`/api/dreams/${dream.id}`, { method: 'DELETE' });
+    await fetch(`/api/dreams/${dream.id}`, { method: 'DELETE', credentials: 'include' });
     loadHistory();
   });
 
@@ -525,7 +777,8 @@ function escapeHtml(str) {
   requestAnimationFrame(draw);
 })();
 
-loadHealth();
+setAuthMode('login');
+checkSession();
 </script>
 </body>
 </html>

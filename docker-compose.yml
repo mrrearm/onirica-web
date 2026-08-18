@@ -8,9 +8,11 @@ services:
       - "3020:3020"
     volumes:
       - ./data:/app/data
+    # env_file carica automaticamente TUTTE le variabili presenti nel
+    # file .env locale (GROQ_API_KEY, JWT_SECRET, TURSO_DATABASE_URL,
+    # TURSO_AUTH_TOKEN, ecc.) senza doverle elencare una per una qui.
+    # Il file .env non va mai committato nel repository.
+    env_file:
+      - .env
     environment:
       - PORT=3020
-      # Facoltativo: se impostata, l'interpretazione usa Groq (gratuito)
-      # invece del motore locale. Va messa in un file .env locale,
-      # MAI committata nel repository.
-      - GROQ_API_KEY=${GROQ_API_KEY:-}
